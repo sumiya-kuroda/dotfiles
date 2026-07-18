@@ -1,6 +1,5 @@
-# Edit this configuration file to define what should be installed on
-# your system.  Help is available in the configuration.nix(5) man page
-# and in the NixOS manual (accessible by running ‘nixos-help’).
+# /etc/nixos/configuration.nix
+# Edit this configuration file to define what should be installed
 
 { config, pkgs, ... }:
 
@@ -8,28 +7,28 @@
   imports =
     [ # Include the results of the hardware scan.
       ./hardware-configuration.nix
+
+      # Extension
+      ./nvidia.nix    
     ];
 
-  # Bootloader.
+  ############################################################################
+  # Bootloader
+  ############################################################################
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
-  networking.hostName = "nixos"; # Define your hostname.
-  # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
-
-  # Configure network proxy if necessary
-  # networking.proxy.default = "http://user:password@proxy:port/";
-  # networking.proxy.noProxy = "127.0.0.1,localhost,internal.domain";
-
-  # Enable networking
+  ############################################################################
+  # Networking
+  ############################################################################
+  networking.hostName = "cayde"; # Define your hostname.
   networking.networkmanager.enable = true;
 
-  # Set your time zone.
+  ############################################################################
+  # Time zone
+  ############################################################################
   time.timeZone = "Europe/London";
-
-  # Select internationalisation properties.
   i18n.defaultLocale = "en_GB.UTF-8";
-
   i18n.extraLocaleSettings = {
     LC_ADDRESS = "en_GB.UTF-8";
     LC_IDENTIFICATION = "en_GB.UTF-8";
@@ -42,6 +41,16 @@
     LC_TIME = "en_GB.UTF-8";
   };
 
+  ############################################################################
+  # Nix / flakes 
+  ############################################################################
+  nix.settings.experimental-features = [ "nix-command" "flakes" ];
+
+  nixpkgs.config.allowUnfree = true;
+
+  ############################################################################
+  # Desktop
+  ############################################################################
   # Enable the X11 windowing system.
   services.xserver.enable = true;
 
@@ -49,19 +58,17 @@
   services.xserver.displayManager.lightdm.enable = true;
   services.xserver.desktopManager.xfce.enable = true;
 
-  # Configure keymap in X11
+  ############################################################################
+  # Keymap / Printing / Sound
+  ############################################################################
   services.xserver.xkb = {
     layout = "gb";
     variant = "";
   };
-
-  # Configure console keymap
   console.keyMap = "uk";
 
-  # Enable CUPS to print documents.
   services.printing.enable = true;
 
-  # Enable sound with pipewire.
   services.pulseaudio.enable = false;
   security.rtkit.enable = true;
   services.pipewire = {
@@ -77,50 +84,64 @@
     #media-session.enable = true;
   };
 
-  # Enable touchpad support (enabled default in most desktopManager).
-  # services.xserver.libinput.enable = true;
+  ############################################################################
+  # Remote access
+  ############################################################################
+  services.openssh.enable = true;
+  services.x2goserver.enable = true;
 
+  ############################################################################
+  # User account 
+  ############################################################################
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.skuroda = {
     isNormalUser = true;
     description = "skuroda";
     extraGroups = [ "networkmanager" "wheel" ];
     packages = with pkgs; [
+      firefox
     #  thunderbird
     ];
   };
 
-  # Install firefox.
-  programs.firefox.enable = true;
 
-  # Allow unfree packages
-  nixpkgs.config.allowUnfree = true;
-
-  # List packages installed in system profile. To search, run:
-  # $ nix search wget
+############################################################################
+  # Software
+  ############################################################################
   environment.systemPackages = with pkgs; [
-  #  vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
-  #  wget
+    vim
+    wget
+    git
+    unzip
+    google-chrome
+    ethtool
+    cifs-utils
+    rustdesk-flutter         
+    warp-terminal             
+    slack                  
+
+    cudaPackages.cudatoolkit
+    cudaPackages.cudnn
+
+    python3                   # system Python for quick use
+    uv                       
+    conda                  
   ];
 
-  # Some programs need SUID wrappers, can be configured further or are
-  # started in user sessions.
-  # programs.mtr.enable = true;
-  # programs.gnupg.agent = {
-  #   enable = true;
-  #   enableSSHSupport = true;
-  # };
+  # uv installs tool shims into ~/.local/bin.
+  environment.localBinInPath = true;
+  programs.nix-ld.enable = true;
+  programs.nix-ld.libraries = with pkgs; [
+    stdenv.cc.cc.lib
+    zlib
+    openssl
+  ];
 
-  # List services that you want to enable:
-
-  # Enable the OpenSSH daemon.
-  # services.openssh.enable = true;
-
-  # Open ports in the firewall.
-  # networking.firewall.allowedTCPPorts = [ ... ];
-  # networking.firewall.allowedUDPPorts = [ ... ];
-  # Or disable the firewall altogether.
-  # networking.firewall.enable = false;
+  programs.mtr.enable = true;
+  programs.gnupg.agent = {
+    enable = true;
+    enableSSHSupport = true;
+  };
 
   # This value determines the NixOS release from which the default
   # settings for stateful data, like file locations and database versions
