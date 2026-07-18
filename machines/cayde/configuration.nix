@@ -1,42 +1,35 @@
-# /etc/nixos/configuration.nix
-#
-# Merged + repaired config for host "cayde".
-# Built from flake.nix (see that file). Apply with:
-#   sudo nixos-rebuild switch --flake /etc/nixos#cayde
-#
+# Edit this configuration file to define what should be installed on
+# your system.  Help is available in the configuration.nix(5) man page
+# and in the NixOS manual (accessible by running ‘nixos-help’).
+
 { config, pkgs, ... }:
 
 {
-  imports = [
-    ./hardware-configuration.nix   # your original, untouched
-    ./docker.nix                   # repaired (see file)
-    ./nvidia.nix                   # repaired (see file)
-    ./desktop-extras.nix           # fonts, Niri, tuigreet, noctalia, etc.
-    # NOTE: <home-manager/nixos> was removed — it needs a channel and clashes
-    #   with the flake, and nothing here actually used it. Re-add as a flake
-    #   input if you ever want Home Manager.
-    # NOTE: the nixos-vscode-server tarball import was removed — flake.nix now
-    #   supplies that module (services.vscode-server.enable still works).
-  ];
+  imports =
+    [ # Include the results of the hardware scan.
+      ./hardware-configuration.nix
+    ];
 
-  ############################################################################
-  # Bootloader — kept exactly as your original (GRUB on /dev/sda).
-  ############################################################################
-  boot.loader.grub.enable = true;
-  boot.loader.grub.device = "/dev/sda";
-  boot.loader.grub.useOSProber = true;
+  # Bootloader.
+  boot.loader.systemd-boot.enable = true;
+  boot.loader.efi.canTouchEfiVariables = true;
 
-  ############################################################################
-  # Networking
-  ############################################################################
-  networking.hostName = "cayde";
+  networking.hostName = "nixos"; # Define your hostname.
+  # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
+
+  # Configure network proxy if necessary
+  # networking.proxy.default = "http://user:password@proxy:port/";
+  # networking.proxy.noProxy = "127.0.0.1,localhost,internal.domain";
+
+  # Enable networking
   networking.networkmanager.enable = true;
 
-  ############################################################################
-  # Locale / time (unchanged from your config)
-  ############################################################################
+  # Set your time zone.
   time.timeZone = "Europe/London";
+
+  # Select internationalisation properties.
   i18n.defaultLocale = "en_GB.UTF-8";
+
   i18n.extraLocaleSettings = {
     LC_ADDRESS = "en_GB.UTF-8";
     LC_IDENTIFICATION = "en_GB.UTF-8";
@@ -49,42 +42,26 @@
     LC_TIME = "en_GB.UTF-8";
   };
 
-  ############################################################################
-  # Nix — enable flakes (this system is built from flake.nix)
-  ############################################################################
-  nix.settings.experimental-features = [ "nix-command" "flakes" ];
+  # Enable the X11 windowing system.
+  services.xserver.enable = true;
 
-  # Allow unfree (nvidia, cuda, vscode, chrome, warp, rustdesk).
-  # Single source of truth — the restrictive allowUnfreePredicate that was in
-  # nvidia.nix has been removed (it would have blocked Chrome/VS Code/Warp).
-  nixpkgs.config.allowUnfree = true;
-
-  ############################################################################
-  # Desktop: X11 + XFCE, plus Niri (Wayland) — see desktop-extras.nix.
-  # The display manager is now greetd + tuigreet (also in desktop-extras.nix),
-  # so LightDM has been removed — you can't run two display managers, and
-  # tuigreet lets you pick XFCE or Niri at login.
-  ############################################################################
-  services.xserver.enable = true;                        # still needed for XFCE (X11)
+  # Enable the XFCE Desktop Environment.
+  services.xserver.displayManager.lightdm.enable = true;
   services.xserver.desktopManager.xfce.enable = true;
 
-  # Keymap — FIXED: services.xserver.layout was renamed to xkb.layout.
+  # Configure keymap in X11
   services.xserver.xkb = {
     layout = "gb";
     variant = "";
   };
+
+  # Configure console keymap
   console.keyMap = "uk";
 
-  ############################################################################
-  # Printing
-  ############################################################################
+  # Enable CUPS to print documents.
   services.printing.enable = true;
 
-  ############################################################################
-  # Sound — PipeWire.
-  # FIXED: removed `sound.enable` (option no longer exists) and renamed
-  # hardware.pulseaudio -> services.pulseaudio.
-  ############################################################################
+  # Enable sound with pipewire.
   services.pulseaudio.enable = false;
   security.rtkit.enable = true;
   services.pipewire = {
@@ -92,102 +69,65 @@
     alsa.enable = true;
     alsa.support32Bit = true;
     pulse.enable = true;
+    # If you want to use JACK applications, uncomment this
+    #jack.enable = true;
+
+    # use the example session manager (no others are packaged yet so this is enabled by default,
+    # no need to redefine it in your config for now)
+    #media-session.enable = true;
   };
 
-  ############################################################################
-  # Remote access
-  ############################################################################
-  services.openssh.enable = true;
-  services.x2goserver.enable = true;
+  # Enable touchpad support (enabled default in most desktopManager).
+  # services.xserver.libinput.enable = true;
 
-  # VS Code Remote-SSH server support (module comes from flake.nix).
-  # Reminder: also run ONCE per user after first login (not declarative):
-  #   systemctl --user enable --now auto-fix-vscode-server.service
-  services.vscode-server.enable = true;
-
-  ############################################################################
-  # User account (kept; de-duplicated VS Code — see note in systemPackages)
-  ############################################################################
+  # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.skuroda = {
     isNormalUser = true;
     description = "skuroda";
-    extraGroups = [ "networkmanager" "wheel" "docker" ];
+    extraGroups = [ "networkmanager" "wheel" ];
     packages = with pkgs; [
-      firefox
-      # Removed `vscode` and `vscode.fhs` here — they collided with the
-      # vscode-with-extensions build in systemPackages (both provide `code`).
+    #  thunderbird
     ];
   };
 
-  ############################################################################
-  # System packages
-  ############################################################################
+  # Install firefox.
+  programs.firefox.enable = true;
+
+  # Allow unfree packages
+  nixpkgs.config.allowUnfree = true;
+
+  # List packages installed in system profile. To search, run:
+  # $ nix search wget
   environment.systemPackages = with pkgs; [
-    # --- your originals ---
-    vim
-    wget
-    git
-    unzip
-    google-chrome
-    ethtool
-    cifs-utils
-
-    # VS Code with your extensions (single install — no bare `vscode` next to
-    # it, which was the collision). Dropped the pinned marketplace
-    # remote-ssh-edit override: it hardcoded a version+sha that easily breaks
-    # on channel bumps, and remote-ssh below already covers Remote-SSH.
-    (vscode-with-extensions.override {
-      vscodeExtensions = with vscode-extensions; [
-        bbenoist.nix
-        ms-python.python
-        ms-azuretools.vscode-docker
-        ms-vscode-remote.remote-ssh
-      ];
-    })
-
-    # --- requested additions ---
-    rustdesk-flutter          # RustDesk remote desktop
-    warp-terminal             # Warp terminal (unfree)
-    slack                     # Slack (unfree)
-
-    # CUDA toolkit + libraries (nvcc, cuDNN). Does NOT flip
-    # nixpkgs.config.cudaSupport (which would rebuild half of nixpkgs);
-    # your Python GPU wheels from uv/pip/conda bring their own CUDA.
-    cudaPackages.cudatoolkit
-    cudaPackages.cudnn
-
-    # Python tooling
-    python3                   # system Python for quick use
-    uv                        # fast Python package/venv manager
-    conda                     # provides the `conda-shell` FHS wrapper
+  #  vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
+  #  wget
   ];
 
-  ############################################################################
-  # uv support
-  ############################################################################
-  # uv installs tool shims into ~/.local/bin.
-  environment.localBinInPath = true;
-  # uv's downloaded standalone Pythons are dynamically linked; nix-ld lets
-  # them run on NixOS.
-  programs.nix-ld.enable = true;
-  programs.nix-ld.libraries = with pkgs; [
-    stdenv.cc.cc.lib
-    zlib
-    openssl
-  ];
+  # Some programs need SUID wrappers, can be configured further or are
+  # started in user sessions.
+  # programs.mtr.enable = true;
+  # programs.gnupg.agent = {
+  #   enable = true;
+  #   enableSSHSupport = true;
+  # };
 
-  ############################################################################
-  # Misc programs (kept)
-  ############################################################################
-  programs.mtr.enable = true;
-  programs.gnupg.agent = {
-    enable = true;
-    enableSSHSupport = true;
-  };
+  # List services that you want to enable:
 
-  ############################################################################
-  # Do NOT change — reflects the release of your FIRST install.
-  # (You can build against nixpkgs 25.11 while leaving this at 23.05.)
-  ############################################################################
-  system.stateVersion = "23.05";
+  # Enable the OpenSSH daemon.
+  # services.openssh.enable = true;
+
+  # Open ports in the firewall.
+  # networking.firewall.allowedTCPPorts = [ ... ];
+  # networking.firewall.allowedUDPPorts = [ ... ];
+  # Or disable the firewall altogether.
+  # networking.firewall.enable = false;
+
+  # This value determines the NixOS release from which the default
+  # settings for stateful data, like file locations and database versions
+  # on your system were taken. It‘s perfectly fine and recommended to leave
+  # this value at the release version of the first install of this system.
+  # Before changing this value read the documentation for this option
+  # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
+  system.stateVersion = "25.11"; # Did you read the comment?
+
 }
