@@ -11,6 +11,7 @@
       # Extension
       ./desktop.nix   
       ./nvidia.nix    
+      ./mounts.nix 
     ];
 
   ############################################################################
@@ -93,6 +94,12 @@
   networking.interfaces.enp8s0.wakeOnLan.enable = true;
   services.vscode-server.enable = true;
 
+  # For Ikora
+  networking.networkmanager.unmanaged = [ "interface-name:eno1" ];
+  networking.interfaces.eno1.ipv4.addresses = [{
+    address = "192.168.5.100";
+    prefixLength = 24;
+  }];
   ############################################################################
   # User account 
   ############################################################################
@@ -122,7 +129,8 @@
     cifs-utils
     rustdesk-flutter         
     vscode             
-    slack                  
+    slack
+    samba                  
 
     cudaPackages.cudatoolkit
     cudaPackages.cudnn
