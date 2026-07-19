@@ -5,10 +5,11 @@ This is where I store configs for my machines. Useful when setting up a new mach
 ## General
 
 ### Windows
-Use 10 or 11
+Use 10 or 11.
 
 ### MacOS
 N/A
 
 ### NixOS
 try > 25.11.
+Make bootable USB with rufus (Select DD). GPT. FAT-32.

@@ -9,6 +9,7 @@
       ./hardware-configuration.nix
 
       # Extension
+      ./desktop.nix   
       ./nvidia.nix    
     ];
 
@@ -126,6 +127,11 @@
     python3                   # system Python for quick use
     uv                       
     conda                  
+  ];
+
+  # CUDA 12.6
+  nixpkgs.overlays = [
+      (final: prev: { cudaPackages = final.cudaPackages_12_6; })
   ];
 
   # uv installs tool shims into ~/.local/bin.
