@@ -45,8 +45,14 @@ in
     options = cifsOptions;
   };
 
-  fileSystems."/mnt/ikora" = {
+  fileSystems."/mnt/ikora_data" = {
     device = "//192.168.5.99/DATA";
+    fsType = "cifs";
+    options = nasOptions;
+  };
+
+  fileSystems."/mnt/ikora_scratch" = {
+    device = "//192.168.5.99/WORKSTATION";
     fsType = "cifs";
     options = nasOptions;
   };
