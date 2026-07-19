@@ -131,7 +131,8 @@
     vscode             
     slack
     samba       
-    zenith           
+    zenith     
+    rclone      
 
     cudaPackages.cudatoolkit
     cudaPackages.cudnn
