@@ -45,7 +45,7 @@
 
     oh-my-zsh = {
       enable = true;
-      theme = "agnoster";     # try "agnoster" for a Nerd Font powerline look
+      theme = "agnoster";     # powerline look — needs a Nerd Font
       plugins = [
         "git"
         "sudo"
@@ -54,6 +54,28 @@
         "colored-man-pages"
       ];
     };
+
+    ########################################################################
+    # conda / miniforge
+    #
+    # This replaces `conda init zsh`, which cannot work here: Home Manager
+    # owns ~/.zshrc as a read-only symlink into the Nix store, so conda
+    # can't edit it (that's the "needs sudo /home/skuroda/.zshrc" error).
+    # Doing it here means it also survives every rebuild.
+    #
+    # NOTE: if HM warns that `initExtra` is deprecated, rename it to
+    # `initContent`.
+    ########################################################################
+    initContent = ''
+      # >>> conda initialize >>>
+      if [ -f "$HOME/miniforge3/etc/profile.d/conda.sh" ]; then
+        . "$HOME/miniforge3/etc/profile.d/conda.sh"
+      fi
+      if [ -f "$HOME/miniforge3/etc/profile.d/mamba.sh" ]; then
+        . "$HOME/miniforge3/etc/profile.d/mamba.sh"
+      fi
+      # <<< conda initialize <<<
+    '';
   };
 
   ##########################################################################

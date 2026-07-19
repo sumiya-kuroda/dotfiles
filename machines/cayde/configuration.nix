@@ -130,7 +130,8 @@
     rustdesk-flutter         
     vscode             
     slack
-    samba                  
+    samba       
+    zenith           
 
     cudaPackages.cudatoolkit
     cudaPackages.cudnn
