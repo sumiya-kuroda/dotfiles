@@ -90,6 +90,8 @@
   ############################################################################
   services.openssh.enable = true;
   services.x2goserver.enable = true;
+  networking.interfaces.enp8s0.wakeOnLan.enable = true;
+  services.vscode-server.enable = true;
 
   ############################################################################
   # User account 
@@ -99,14 +101,15 @@
     isNormalUser = true;
     description = "skuroda";
     extraGroups = [ "networkmanager" "wheel" ];
+    shell = pkgs.zsh;
     packages = with pkgs; [
       firefox
-    #  thunderbird
+      warp-terminal
     ];
   };
 
 
-############################################################################
+  ############################################################################
   # Software
   ############################################################################
   environment.systemPackages = with pkgs; [
@@ -118,7 +121,7 @@
     ethtool
     cifs-utils
     rustdesk-flutter         
-    warp-terminal             
+    vscode             
     slack                  
 
     cudaPackages.cudatoolkit
@@ -142,6 +145,9 @@
     zlib
     openssl
   ];
+
+  # Shell
+  programs.zsh.enable = true;
 
   programs.mtr.enable = true;
   programs.gnupg.agent = {

@@ -4,6 +4,10 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";
 
+    # VS Code Server
+    vscode-server.url = "github:nix-community/nixos-vscode-server";
+    vscode-server.inputs.nixpkgs.follows = "nixpkgs";
+
     # Theming
     catppuccin = {
       url = "github:catppuccin/nix/release-25.11";
@@ -15,13 +19,14 @@
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
   };
 
-  outputs = inputs@{ self, nixpkgs, home-manager, catppuccin, ... }: {
+  outputs = inputs@{ self, nixpkgs, home-manager, catppuccin, vscode-server, ... }: {
     nixosConfigurations.cayde = nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";
       specialArgs = { inherit inputs; };
       modules = [
         ./configuration.nix
         ./desktop.nix
+        vscode-server.nixosModules.default
         catppuccin.nixosModules.catppuccin
         home-manager.nixosModules.home-manager
 
