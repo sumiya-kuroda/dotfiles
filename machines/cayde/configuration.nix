@@ -132,7 +132,8 @@
     slack
     samba       
     zenith     
-    rclone      
+    rclone   
+    pass   
 
     cudaPackages.cudatoolkit
     cudaPackages.cudnn

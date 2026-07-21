@@ -24,7 +24,7 @@ let
     "credentials=/home/skuroda/.smb_ikora"
     "uid=1000"
     "gid=100"
-    "file_mode=0664"
+    "file_mode=0775"
     "dir_mode=0775"
     "vers=3.1.1"                    
     "iocharset=utf8"
