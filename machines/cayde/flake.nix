@@ -30,6 +30,22 @@
         catppuccin.nixosModules.catppuccin
         home-manager.nixosModules.home-manager
 
+        # RustDesk unattended-access background service.
+        ({ pkgs, ... }: {
+          systemd.services.rustdesk = {
+            description = "RustDesk background service";
+            after = [ "network-online.target" ];
+            wants = [ "network-online.target" ];
+            wantedBy = [ "multi-user.target" ];
+            serviceConfig = {
+              Type = "simple";
+              ExecStart = "${pkgs.rustdesk-flutter}/bin/rustdesk --service";
+              Restart = "on-failure";
+              RestartSec = 5;
+            };
+          };
+        })
+
         # Home Manager wiring for user skuroda (config lives in ./home.nix).
         {
           home-manager.useGlobalPkgs = true;

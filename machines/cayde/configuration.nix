@@ -114,7 +114,10 @@
       warp-terminal
     ];
   };
-
+  services.displayManager.autoLogin = {
+    enable = true;
+    user = "skuroda";
+  };
 
   ############################################################################
   # Software
