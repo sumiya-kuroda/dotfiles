@@ -126,6 +126,7 @@
     vim
     wget
     git
+    xclip
     unzip
     google-chrome
     ethtool

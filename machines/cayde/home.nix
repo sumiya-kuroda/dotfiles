@@ -9,6 +9,7 @@
 
   home.username = "skuroda";
   home.homeDirectory = "/home/skuroda";
+  home.sessionPath = [ "$HOME/dotfiles/sh" ];
 
   # HM's own release version — independent of system.stateVersion.
   home.stateVersion = "25.11";
@@ -37,8 +38,7 @@
 
     shellAliases = {
       ll = "ls -alh";
-      ".." = "cd ..";
-      # Rebuild from your dotfiles repo:
+      rd = "DISPLAY=:0 setsid rustdesk >/dev/null 2>&1 &";
       rebuild = "sudo nixos-rebuild switch --flake ~/dotfiles#cayde";
       gs = "git status";
     };
