@@ -114,6 +114,23 @@
       warp-terminal
     ];
   };
+
+  users.users.jsheppard = {
+    isNormalUser = true;
+    description = "jsheppard";
+    extraGroups = [ "networkmanager" "wheel" ];   
+    shell = pkgs.zsh;   
+    packages = with pkgs; [
+
+      firefox
+
+    ];
+               
+  };
+  # Run
+  # sudo passwd jsheppard
+  # sudo passwd -e jsheppard
+
   services.displayManager.autoLogin = {
     enable = true;
     user = "skuroda";
